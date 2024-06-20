@@ -76,3 +76,8 @@
     @apply bg-black text-white dark:bg-white dark:text-black; /* Use standard Tailwind utilities */
   }
 }
+
+.fixed-dimensions {
+  width: fit-content;
+  height: fit-content;
+}

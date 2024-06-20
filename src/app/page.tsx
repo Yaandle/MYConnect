@@ -54,7 +54,6 @@ const Page = () => {
                             <BackgroundBeams />
                         </div>
                     </div>
-                    
                 </section>
             </div>
         </main>
