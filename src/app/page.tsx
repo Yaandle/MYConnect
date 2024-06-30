@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Navbar from '@/components/global/navbar';
 import { FlipWords } from "../components/ui/flip-words";
 import { BackgroundBeams } from "../components/ui/background-beams";
+import React from 'react';
 
 const Page = () => {
     const words = ["Employers", "Contractors", "Work", "Tools", "Technology"];
