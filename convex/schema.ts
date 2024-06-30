@@ -107,7 +107,7 @@ export default defineSchema({
     faq: defineTable({
         question: v.string(),
         answer: v.string(),
-        gigId: v.id("jobs"),
+        jobId: v.id("jobs"),
     }),
     messages: defineTable({
         userId: v.id("users"),
