@@ -1,7 +1,5 @@
 "use client";
-import { useEffect } from "react";
-import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
+
 import { CreateForm } from "./_components/create-form";
 
 interface CreateJobProps {
@@ -13,12 +11,7 @@ interface CreateJobProps {
 const CreateJob = ({
     params
 }: CreateJobProps) => {
-    const insertCategories = useMutation(api.seedCategories.create);
-    useEffect(() => {
-        insertCategories({})
-            .then(() => console.log("Categories seeded successfully"))
-            .catch((error) => console.error("Failed to seed categories", error));
-    }, [insertCategories]);
+
     return (
         <div className="flex justify-center">
             <CreateForm

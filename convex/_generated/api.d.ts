@@ -17,7 +17,8 @@ import type {
 import type * as categories from "../categories.js";
 import type * as job from "../job.js";
 import type * as seedCategories from "../seedCategories.js";
-import type * as seedsubcategories from "../seedsubcategories.js";
+import type * as seedSubcategories from "../seedSubcategories.js";
+import type * as users from "../users.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -31,7 +32,8 @@ declare const fullApi: ApiFromModules<{
   categories: typeof categories;
   job: typeof job;
   seedCategories: typeof seedCategories;
-  seedsubcategories: typeof seedsubcategories;
+  seedSubcategories: typeof seedSubcategories;
+  users: typeof users;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,
