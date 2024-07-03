@@ -1,6 +1,5 @@
 import { v } from "convex/values";
-import { action, internalMutation, internalQuery, mutation, query } from "./_generated/server";
-import { api, internal } from "./_generated/api";
+import { mutation, query } from "./_generated/server";
 
 export const store = mutation({
     args: {},
@@ -37,4 +36,16 @@ export const store = mutation({
 
         return userId;
     },
+});
+
+export const getCurrentUser = query(async ({ db, auth }) => {
+    const user = await auth.getUserIdentity();
+    if (!user) {
+        return null;
+    }
+    const userRecord = await db
+        .query("users")
+        .withIndex("by_token", (q) => q.eq("tokenIdentifier", user.tokenIdentifier))
+        .unique();
+    return userRecord;
 });
