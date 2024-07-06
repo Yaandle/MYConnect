@@ -1,26 +1,23 @@
 "use client";
-
 import React from 'react';
-import { CreateForm } from "./_components/create-form";
+import CalendarSystem from '@/components/CalendarSystem';
 
-interface CreateJobProps {
+interface Dashboard {
     params: {
         username: string;
     }
 }
 
-const CreateJob = ({
+const Dashboard = ({
     params
-}: CreateJobProps) => {
+}: Dashboard) => {
     return (
         <div className="flex flex-col items-center">
             <div className="w-full max-w-4xl">
-                <CreateForm
-                    username={params.username}
-                />
+                <CalendarSystem />
             </div>
         </div>
     );
 }
 
-export default CreateJob;
+export default Dashboard;
