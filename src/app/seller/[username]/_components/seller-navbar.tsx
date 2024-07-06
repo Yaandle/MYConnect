@@ -29,7 +29,7 @@ const components: { title: string; href: string; description: string }[] = [
             "A modal dialog that interrupts the user with important content and expects a response.",
     },
     {
-        title: "Gigs",
+        title: "Jobs",
         href: "/docs/primitives/hover-card",
         description:
             "For sighted users to preview content available behind a link.",
@@ -70,7 +70,7 @@ export const SellerNavbar = () => {
                 <NavigationMenu>
                     <NavigationMenuList className="flex flex-col md:flex-row">
                         <NavigationMenuItem>
-                            <Link href="/docs" legacyBehavior passHref>
+                            <Link href="/dashboard" legacyBehavior passHref>
                                 <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                                     Dashboard
                                 </NavigationMenuLink>
@@ -96,8 +96,8 @@ export const SellerNavbar = () => {
                                             </a>
                                         </NavigationMenuLink>
                                     </li>
-                                    <ListItem href={`/seller/${currentUser?.username}/manage-gigs`} title="Gigs">
-                                        Manage, create and edit your gigs here.
+                                    <ListItem href={`/seller/${currentUser?.username}/manage-jobs`} title="Jobs">
+                                        Manage, create and edit your Jobs here.
                                     </ListItem>
                                     <ListItem href={`/seller/${currentUser}/profile`} title="Profile">
                                         Manage and edit your profile. Present yourself to the world.
