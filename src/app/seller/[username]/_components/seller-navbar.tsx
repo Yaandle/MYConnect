@@ -60,7 +60,7 @@ export const SellerNavbar = () => {
                     </Button>
                     {currentUser && (
                         <Button variant={"ghost"} className="text-muted-foreground" onClick={() => router.push(`/`)}>
-                            Switch To Buying
+                            Switch To Employee
                         </Button>
                     )}
                     <UserButton />
