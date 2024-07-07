@@ -1,15 +1,16 @@
 import Link from 'next/link';
 import React from 'react';
-import { MenuIcon } from 'lucide-react'
+import { MenuIcon } from 'lucide-react';
 
+type Props = {
+  username: string; // Assuming you pass the username as a prop
+};
 
-type Props = {};
-
-const Navbar = (props: Props) => {
+const Navbar: React.FC<Props> = ({ username }) => {
   return (
     <header className="fixed right-0 left-0 top-0 py-4 px-4 bg-white backdrop-blur-lg z-[100] flex items-center border-b-[1px] border-neutral-300 justify-between">
       <aside className="flex items-center gap-[2px]">
-      <p className="text-3xl font-bold text-black">MY <span className="text-green-500">Connect</span> </p>
+        <p className="text-3xl font-bold text-black">MY <span className="text-green-500">Connect</span> </p>
       </aside>
       <nav className="absolute left-[50%] top-[50%] transform translate-x-[-50%] translate-y-[-50%] hidden md:block">
         <ul className="flex items-center gap-4 list-none">
@@ -19,25 +20,17 @@ const Navbar = (props: Props) => {
             </Link>
           </li>
           <li>
-            <Link href="/contractors" legacyBehavior>
-              <a className="text-black">Contractors</a>
-            </Link>
-          </li>
-          <li>
-            <Link href="/employers" legacyBehavior>
+            <Link href={`/seller/${username}/dashboard`} legacyBehavior>
               <a className="text-black">Employers</a>
             </Link>
           </li>
           <li>
-            <Link href="#" legacyBehavior>
-              <a className="text-black"></a>
+            <Link href="/contractors" legacyBehavior>
+              <a className="text-black">Contractors</a>
             </Link>
           </li>
-          <li>
-            <Link href="#" legacyBehavior>
-              <a className="text-black"></a>
-            </Link>
-          </li>
+
+          {/* Additional navigation items */}
         </ul>
       </nav>
       <aside className="flex items-center gap-4">
