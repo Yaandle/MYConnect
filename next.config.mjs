@@ -1,8 +1,16 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    reactStrictMode: true,
     images: {
-        domains: ['media.istockphoto.com', 't3.ftcdn.net', 'necessary-ladybug-115.convex.cloud', 'upload.wikimedia.org', 'images.unsplash.com'],
+      remotePatterns: [
+        {
+          protocol: 'https',
+          hostname: '*.convex.cloud',
+          port: '',
+          pathname: '/api/storage/**',
+        },
+      ],
     },
-};
-
-export default nextConfig;
+  };
+  
+  export default nextConfig;

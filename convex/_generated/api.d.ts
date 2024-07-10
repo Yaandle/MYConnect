@@ -17,8 +17,11 @@ import type {
 import type * as categories from "../categories.js";
 import type * as job from "../job.js";
 import type * as jobMedia from "../jobMedia.js";
+import type * as jobs from "../jobs.js";
+import type * as offers from "../offers.js";
 import type * as seedCategories from "../seedCategories.js";
 import type * as seedSubcategories from "../seedSubcategories.js";
+import type * as stripe from "../stripe.js";
 import type * as users from "../users.js";
 
 /**
@@ -33,8 +36,11 @@ declare const fullApi: ApiFromModules<{
   categories: typeof categories;
   job: typeof job;
   jobMedia: typeof jobMedia;
+  jobs: typeof jobs;
+  offers: typeof offers;
   seedCategories: typeof seedCategories;
   seedSubcategories: typeof seedSubcategories;
+  stripe: typeof stripe;
   users: typeof users;
 }>;
 export declare const api: FilterApi<

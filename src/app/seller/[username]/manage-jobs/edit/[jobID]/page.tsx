@@ -1,5 +1,6 @@
 "use client";
 
+import { useParams } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
 import { Doc, Id } from "@/convex/_generated/dataModel";
@@ -7,7 +8,7 @@ import { useApiMutation } from "@/hooks/use-api-mutation";
 import { useAuth } from "@clerk/nextjs";
 import { useMutation, useQuery } from "convex/react";
 import Link from "next/link";
-import { FormEvent, useRef, useState } from "react";
+import { FormEvent, useRef, useState, useEffect } from "react";
 
 import { Input } from "@/components/ui/input";
 import { Description } from "@/components/description";
@@ -18,22 +19,32 @@ import { TitleEditor } from "@/components/title-editor";
 
 import { Label } from "@/components/ui/label";
 
-interface EditdPageProps {
-    params: {
-        jobId: string;
-    };
-}
+const Edit = () => {
+    const params = useParams();
+    const jobID = params.jobID as string;
 
-const Edit = ({ params }: EditdPageProps) => {
     console.log("Params received:", params);
+    console.log("Job ID:", jobID);
 
-    if (!params.jobId) {
+    const router = useRouter();
+    const identity = useAuth();
+
+    useEffect(() => {
+        if (!identity) {
+            console.error("User is not authenticated");
+            router.push("/login"); // Redirect to login page
+        }
+    }, [identity, router]);
+
+    if (!jobID) {
         console.error("Job ID is missing from params:", params);
         return <div>Error: No job ID provided</div>;
     }
 
-    const job = useQuery(api.job.get, { id: params.jobId as Id<"jobs"> });
-    const published = useQuery(api.job.isPublished, { id: params.jobId as Id<"jobs"> });
+    const job = useQuery(api.job.get, { id: jobID as Id<"jobs"> });
+    console.log("Job query result:", job);
+
+    const published = useQuery(api.job.isPublished, { id: jobID as Id<"jobs"> });
     const {
         mutate: remove,
         pending: removePending,
@@ -46,9 +57,6 @@ const Edit = ({ params }: EditdPageProps) => {
         mutate: unpublish,
         pending: unpublishPending,
     } = useApiMutation(api.job.unpublish);
-    const router = useRouter();
-
-    const identity = useAuth();
 
     const generateUploadUrl = useMutation(api.jobMedia.generateUploadUrl);
 
@@ -56,16 +64,13 @@ const Edit = ({ params }: EditdPageProps) => {
     const [selectedImages, setSelectedImages] = useState<File[]>([]);
     const sendImage = useMutation(api.jobMedia.sendImage);
 
-    if (!identity) {
-        throw new Error("Unauthorized");
-    }
-
     if (job === undefined || published === undefined) {
         return <div>Loading...</div>;
     }
 
     if (job === null) {
-        return <div>Job not found</div>;
+        console.error(`Job not found for ID: ${jobID}`);
+        return <div>Job not found. Please check the job ID and try again.</div>;
     }
 
     async function handleSendImage(event: FormEvent) {
@@ -74,49 +79,54 @@ const Edit = ({ params }: EditdPageProps) => {
 
         const nonNullableJob = job as Doc<"jobs">;
 
-        // Step 1: Get a short-lived upload URL
-        const postUrl = await generateUploadUrl();
+        try {
+            const postUrl = await generateUploadUrl();
 
-        await Promise.all(selectedImages.map(async (image) => {
-            const result = await fetch(postUrl, {
-                method: "POST",
-                headers: { "Content-Type": image.type },
-                body: image,
-            });
-
-            const json = await result.json();
-
-            if (!result.ok) {
-                throw new Error(`Upload failed: ${JSON.stringify(json)}`);
-            }
-            const { storageId } = json;
-            // Step 3: Save the newly allocated storage id to the database
-            await sendImage({ storageId, format: "image", jobId: nonNullableJob._id })
-                .catch((error) => {
-                    console.log(error);
-                    toast.error("Maximum 5 files reached.");
+            await Promise.all(selectedImages.map(async (image) => {
+                const result = await fetch(postUrl, {
+                    method: "POST",
+                    headers: { "Content-Type": image.type },
+                    body: image,
                 });
-        }));
 
-        setSelectedImages([]);
-        imageInput.current!.value = "";
+                const json = await result.json();
+
+                if (!result.ok) {
+                    throw new Error(`Upload failed: ${JSON.stringify(json)}`);
+                }
+                const { storageId } = json;
+                await sendImage({ storageId, format: "image", jobId: nonNullableJob._id });
+            }));
+
+            setSelectedImages([]);
+            if (imageInput.current) imageInput.current.value = "";
+        } catch (error) {
+            console.error("Error uploading image:", error);
+            toast.error("Failed to upload image. Please try again.");
+        }
     }
 
     const onPublish = async () => {
-        if (published !== true) {
-            publish({ id: params.jobId as Id<"jobs"> })
-                .catch((error) => {
-                    console.log(error);
-                    toast.error("Failed to publish. Please make sure there are at least 1 image, 3 offers and a description.");
-                });
-        } else {
-            unpublish({ id: params.jobId as Id<"jobs"> })
+        try {
+            if (published !== true) {
+                await publish({ id: jobID as Id<"jobs"> });
+            } else {
+                await unpublish({ id: jobID as Id<"jobs"> });
+            }
+        } catch (error) {
+            console.error("Error publishing/unpublishing:", error);
+            toast.error("Failed to publish/unpublish. Please make sure there are at least 1 image, 3 offers and a description.");
         }
     }
 
     const onDelete = async () => {
-        remove({ id: params.jobId as Id<"jobs"> });
-        router.back();
+        try {
+            await remove({ id: jobID as Id<"jobs"> });
+            router.back();
+        } catch (error) {
+            console.error("Error deleting job:", error);
+            toast.error("Failed to delete job. Please try again.");
+        }
     };
 
     return (
@@ -164,11 +174,17 @@ const Edit = ({ params }: EditdPageProps) => {
                     </div>
                 </form>
                 <div className="flex rounded-md border border-zinc-300 items-center space-x-4 w-fit p-2 cursor-default">
-                    <p className="text-muted-foreground">👨‍🎨 Creator: {"Vuk Rosic"}</p>
+                    <p className="text-muted-foreground">👨‍🎨 Creator: {job.seller.username}</p>
                 </div>
 
                 <h2 className="font-semibold">About this job</h2>
             </div>
+            <Description
+                initialContent={job.description}
+                editable={true}
+                className="pb-40 mt-12 2xl:px-[200px] xl:px-[90px] xs:px-[17px]"
+                jobId={job._id}
+            />
         </>
     )
 }

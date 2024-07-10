@@ -1,35 +1,66 @@
-import Link from 'next/link';
-import React from 'react';
-import { MenuIcon } from 'lucide-react';
+"use client";
 
-type Props = {
-  username: string; // Assuming you pass the username as a prop
-};
+import * as React from "react";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu";
+import { Button } from "@/components/ui/button";
+import { MessageCircle } from "lucide-react";
+import { UserButton } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
-const Navbar: React.FC<Props> = ({ username }) => {
+const components: { title: string; href: string; description: string }[] = [
+  {
+    title: "Orders",
+    href: "/docs/primitives/alert-dialog",
+    description: "A modal dialog that interrupts the user with important content and expects a response.",
+  },
+  {
+    title: "Jobs",
+    href: "/docs/primitives/hover-card",
+    description: "For sighted users to preview content available behind a link.",
+  },
+  {
+    title: "Profile",
+    href: "/profile",
+    description: "Displays an indicator showing the completion progress of a task, typically displayed as a progress bar.",
+  }
+];
+
+export const Navbar: React.FC<{ username: string }> = ({ username }) => {
+  const currentUser = useQuery(api.users.getCurrentUser);
+  const router = useRouter();
+
+  const onClickInbox = () => {
+    router.push("/inbox");
+  };
+
   return (
     <header className="fixed right-0 left-0 top-0 py-4 px-4 bg-white backdrop-blur-lg z-[100] flex items-center border-b-[1px] border-neutral-300 justify-between">
       <aside className="flex items-center gap-[2px]">
-        <p className="text-3xl font-bold text-black">MY <span className="text-green-500">Connect</span> </p>
+        <p className="text-3xl font-bold text-black">MY <span className="text-green-500">Connect</span></p>
       </aside>
       <nav className="absolute left-[50%] top-[50%] transform translate-x-[-50%] translate-y-[-50%] hidden md:block">
         <ul className="flex items-center gap-4 list-none">
           <li>
-            <Link href="#" legacyBehavior>
-              <a className="text-black">Search</a>
-            </Link>
+            <Link href="#" className="text-black">Search</Link>
           </li>
           <li>
-            <Link href={`/seller/${username}/dashboard`} legacyBehavior>
-              <a className="text-black">Employers</a>
-            </Link>
+            <Link href={`/seller/${username}/dashboard`} className="text-black">Employers</Link>
           </li>
           <li>
-            <Link href="/contractors" legacyBehavior>
-              <a className="text-black">Contractors</a>
-            </Link>
+            <Link href="/contractors" className="text-black">Contractors</Link>
           </li>
-
           {/* Additional navigation items */}
         </ul>
       </nav>
@@ -43,10 +74,115 @@ const Navbar: React.FC<Props> = ({ username }) => {
             {true ? 'Dashboard' : 'Get Started'}
           </span>
         </Link>
-        <MenuIcon className="md.hidden" />
+        <Button className="md:hidden" onClick={onClickInbox} variant="ghost">
+          <MessageCircle />
+        </Button>
       </aside>
+      <div className="relative">
+        <div className="flex justify-center lg:absolute top-0 right-0">
+          <div className="w-fit flex gap-x-1 items-center p-3">
+            <Button className="p-0 text-muted-foreground" onClick={onClickInbox} variant="ghost">
+              <MessageCircle className="p-0" />
+            </Button>
+            {currentUser && (
+              <Button variant="ghost" className="text-muted-foreground" onClick={() => router.push(`/`)}>
+                Switch To Employee
+              </Button>
+            )}
+            <UserButton />
+          </div>
+        </div>
+        <div className="flex w-full justify-center p-3">
+          <NavigationMenu>
+            <NavigationMenuList className="flex flex-col md:flex-row">
+              <NavigationMenuItem>
+                <Link href="/dashboard" legacyBehavior passHref>
+                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                    Dashboard
+                  </NavigationMenuLink>
+                </Link>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <NavigationMenuTrigger>My business</NavigationMenuTrigger>
+                <NavigationMenuContent>
+                  <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
+                    <li className="row-span-3">
+                      <NavigationMenuLink asChild>
+                        <a
+                          className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
+                          href="/"
+                        >
+                          <div className="mb-2 mt-4 text-lg font-medium">Orders</div>
+                          <p className="text-sm leading-tight text-muted-foreground">
+                            Keep track of your orders and deliveries. Manage everything at one place.
+                          </p>
+                        </a>
+                      </NavigationMenuLink>
+                    </li>
+                    <ListItem href={`/seller/${currentUser?.username}/manage-jobs`} title="Jobs">
+                      Manage, create and edit your Jobs here.
+                    </ListItem>
+                    <ListItem href={`/seller/${currentUser?.username}/profile`} title="Profile">
+                      Manage and edit your profile. Present yourself to the world.
+                    </ListItem>
+                  </ul>
+                </NavigationMenuContent>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <NavigationMenuTrigger>Advertising & Growth</NavigationMenuTrigger>
+                <NavigationMenuContent>
+                  <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                    {components.map((component) => (
+                      <ListItem
+                        key={component.title}
+                        title={component.title}
+                        href={component.href}
+                      >
+                        {component.description}
+                      </ListItem>
+                    ))}
+                  </ul>
+                </NavigationMenuContent>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <Link href="/docs" legacyBehavior passHref>
+                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                    Analytics
+                  </NavigationMenuLink>
+                </Link>
+              </NavigationMenuItem>
+            </NavigationMenuList>
+          </NavigationMenu>
+        </div>
+      </div>
     </header>
   );
 };
+
+const ListItem = React.forwardRef<
+  React.ElementRef<"a">,
+  React.ComponentPropsWithoutRef<"a">
+>(({ className, title, children, ...props }, ref) => {
+  return (
+    <li>
+      <NavigationMenuLink asChild>
+        <a
+          ref={ref}
+          className={cn(
+            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+            className
+          )}
+          {...props}
+        >
+          <div className="text-sm font-medium leading-none">{title}</div>
+          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+            {children}
+          </p>
+        </a>
+      </NavigationMenuLink>
+    </li>
+  );
+});
+ListItem.displayName = "ListItem";
 
 export default Navbar;
