@@ -19,8 +19,10 @@ import type * as job from "../job.js";
 import type * as jobMedia from "../jobMedia.js";
 import type * as jobs from "../jobs.js";
 import type * as offers from "../offers.js";
+import type * as reviews from "../reviews.js";
 import type * as seedCategories from "../seedCategories.js";
 import type * as seedSubcategories from "../seedSubcategories.js";
+import type * as skills from "../skills.js";
 import type * as stripe from "../stripe.js";
 import type * as users from "../users.js";
 
@@ -38,8 +40,10 @@ declare const fullApi: ApiFromModules<{
   jobMedia: typeof jobMedia;
   jobs: typeof jobs;
   offers: typeof offers;
+  reviews: typeof reviews;
   seedCategories: typeof seedCategories;
   seedSubcategories: typeof seedSubcategories;
+  skills: typeof skills;
   stripe: typeof stripe;
   users: typeof users;
 }>;

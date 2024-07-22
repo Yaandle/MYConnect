@@ -18,8 +18,7 @@ export const get = query({
             jobs = await ctx.db
                 .query("jobs")
                 .withSearchIndex("search_title", (q) =>
-                    q
-                        .search("title", title)
+                    q.search("title", title)
                 )
                 .collect();
         } else {
@@ -30,10 +29,8 @@ export const get = query({
                 .collect();
         }
 
-        // check if there is filter
         if (args.filter !== undefined) {
             const filter = args.filter as string;
-            // get subcategory by name
             const subcategory = await ctx.db
                 .query("subcategories")
                 .withIndex("by_name", (q) => q.eq("name", filter))
@@ -50,9 +47,7 @@ export const get = query({
                 return ctx.db
                     .query("userFavorites")
                     .withIndex("by_user_job", (q) =>
-                        q
-                            .eq("userId", job.sellerId)
-                            .eq("jobId", job._id)
+                        q.eq("userId", job.sellerId).eq("jobId", job._id)
                     )
                     .unique()
                     .then((favorite) => {
@@ -64,9 +59,6 @@ export const get = query({
                     });
             }));
         }
-
-        //const jobsWithFavorite = await Promise.all(jobsWithFavoriteRelation);
-
 
         const jobsWithImages = await Promise.all(jobsWithFavoriteRelation.map(async (job) => {
             const image = await ctx.db
@@ -95,14 +87,13 @@ export const get = query({
                 storageId: image?.storageId,
                 seller,
                 reviews,
-                offer
+                offer,
             };
         }));
 
         return jobsWithImages;
     },
 });
-
 
 export const getBySellerName = query({
     args: {
@@ -127,11 +118,9 @@ export const getBySellerName = query({
     },
 });
 
-
 export const getJobsWithImages = query({
     args: { sellerUsername: v.string() },
     handler: async (ctx, args) => {
-
         const seller = await ctx.db.query("users")
             .withIndex("by_username", (q) => q.eq("username", args.sellerUsername))
             .unique();
@@ -149,8 +138,6 @@ export const getJobsWithImages = query({
         }
 
         const jobsWithImages = await Promise.all(jobs.map(async (job) => {
-
-            // get images
             const images = await ctx.db.query("jobMedia")
                 .withIndex("by_jobId", (q) => q.eq("jobId", job._id))
                 .collect();
@@ -174,8 +161,6 @@ export const getJobsWithImages = query({
         return jobsWithImages;
     },
 });
-
-
 
 export const getJobsWithOrderAmountAndRevenue = query({
     handler: async (ctx) => {
@@ -234,7 +219,6 @@ export const getJobsWithOrderAmountAndRevenue = query({
             })
         );
 
-        // get images
         const jobsFull = await Promise.all(jobsWithOrderAmountAndRevenue.map(async (job) => {
             const image = await ctx.db
                 .query("jobMedia")
@@ -245,18 +229,31 @@ export const getJobsWithOrderAmountAndRevenue = query({
                 const url = await ctx.storage.getUrl(image.storageId);
                 return {
                     ...job,
-                    ImageUrl: url
+                    ImageUrl: url,
                 };
             }
             return {
                 ...job,
-                ImageUrl: null
+                ImageUrl: null,
             };
         }));
 
+        return jobsFull;
+    },
+});
 
-
-
-        return jobsFull
+export const getCategoryAndSubcategory = query({
+    args: { jobId: v.id("jobs") },
+    handler: async (ctx, args) => {
+        const job = await ctx.db.get(args.jobId);
+        if (!job) {
+            return null;
+        }
+        const subcategory = await ctx.db.get(job.subcategoryId);
+        if (!subcategory) {
+            return { subcategory: null, category: null };
+        }
+        const category = await ctx.db.get(subcategory.categoryId);
+        return { category, subcategory };
     },
 });
