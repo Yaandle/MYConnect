@@ -1,4 +1,4 @@
-import Navbar from "../dashboard/[username]/_components/navbar";
+import Navbar from "../../dashboard/[username]/_components/navbar";
 
 interface UserJobLayoutProps {
     children: React.ReactNode;

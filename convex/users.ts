@@ -3,57 +3,53 @@ import { action, internalMutation, internalQuery, mutation, query } from "./_gen
 import Stripe from "stripe";
 import { api, internal } from "./_generated/api";
 
-export const store = mutation({
-    args: {},
-    handler: async (ctx) => {
-        const identity = await ctx.auth.getUserIdentity();
-        if (!identity) {
+
+export const store=mutation({
+    args:{},
+    handler:async(ctx)=>{
+        const identity=await ctx.auth.getUserIdentity();
+        if(!identity){
             throw new Error("Called storeUser without authentication present");
         }
 
-        // Check if we've already stored this identity before.
-        const user = await ctx.db
+        const user=await ctx.db
             .query("users")
-            .withIndex("by_token", (q) =>
-                q.eq("tokenIdentifier", identity.tokenIdentifier)
+            .withIndex("by_token",(q)=>
+                q.eq("tokenIdentifier",identity.tokenIdentifier)
             )
             .unique();
-        if (user !== null) {
-            // If we've seen this identity before but the name has changed, patch the value.
-            if (user.username !== identity.nickname) {
-                await ctx.db.patch(user._id, { username: identity.nickname });
+        if(user!==null){
+            if(user.username!==identity.nickname){
+                await ctx.db.patch(user._id,{username:identity.nickname});
             }
             return user._id;
         }
 
-        // If it's a new identity, create a new `User`.
-        const userId = await ctx.db.insert("users", {
-            fullName: identity.name!,
-            tokenIdentifier: identity.tokenIdentifier,
-            title: "",
-            about: "",
-            username: identity.nickname!,
-            profileImageUrl: identity.profileUrl,
+        const userId=await ctx.db.insert("users",{
+            fullName:identity.name!,
+            tokenIdentifier:identity.tokenIdentifier,
+            title:"",
+            about:"",
+            username:identity.nickname!,
+            profileImageUrl:identity.profileUrl,
         });
 
         return userId;
     },
 });
 
+export const getCurrentUser=query({
+    handler:async(ctx)=>{
+        const identity=await ctx.auth.getUserIdentity();
 
-export const getCurrentUser = query({
-    handler: async (ctx) => {
-        const identity = await ctx.auth.getUserIdentity();
-
-        if (!identity) {
+        if(!identity){
             return null;
         }
 
-        // throw new Error("Unauthenticated call to query");
-        const user = await ctx.db
+        const user=await ctx.db
             .query("users")
-            .withIndex("by_token", (q) =>
-                q.eq("tokenIdentifier", identity.tokenIdentifier)
+            .withIndex("by_token",(q)=>
+                q.eq("tokenIdentifier",identity.tokenIdentifier)
             )
             .unique();
 
@@ -61,141 +57,133 @@ export const getCurrentUser = query({
     }
 });
 
-
-export const get = query({
-    args: { id: v.id("users") },
-    handler: async (ctx, args) => {
-        const user = await ctx.db.get(args.id);
+export const get=query({
+    args:{id:v.id("users")},
+    handler:async(ctx,args)=>{
+        const user=await ctx.db.get(args.id);
         return user;
     },
 });
 
-
-export const getStripeAccountId = internalQuery({
-    args: { userId: v.id("users") },
-    handler: async (ctx, args) => {
-        const user = await ctx.db.get(args.userId);
-        if (!user) {
+export const getStripeAccountId=internalQuery({
+    args:{userId:v.id("users")},
+    handler:async(ctx,args)=>{
+        const user=await ctx.db.get(args.userId);
+        if(!user){
             throw new Error("User not found");
         }
         return user.stripeAccountId;
     },
 });
 
-
-export const createStripe = action({
-    args: {},
-    handler: async (ctx, args) => {
-        const identity = await ctx.auth.getUserIdentity();
-        if (!identity) {
+export const createStripe=action({
+    args:{},
+    handler:async(ctx,args)=>{
+        const identity=await ctx.auth.getUserIdentity();
+        if(!identity){
             throw new Error("Called storeUser without authentication present");
         }
 
-        const user = await ctx.runQuery(api.users.getCurrentUser);
-        if (user === null) {
+        const user=await ctx.runQuery(api.users.getCurrentUser);
+        if(user===null){
             return;
         }
-        const stripe = new Stripe(process.env.NEXT_STRIPE_SECRET_KEY!, {
-            apiVersion: "2024-06-20",
+        const stripe=new Stripe(process.env.NEXT_STRIPE_SECRET_KEY!,{
+            apiVersion:"2024-06-20",
         });
 
-        let accountId: string | null = await ctx.runQuery(internal.users.getStripeAccountId, { userId: user._id });
+        let accountId:string|null=await ctx.runQuery(internal.users.getStripeAccountId,{userId:user._id});
 
-        if (!accountId) {
-            const account = await stripe.accounts.create({
-                type: 'standard',
+        if(!accountId){
+            const account=await stripe.accounts.create({
+                type:'standard',
             });
-            accountId = account.id;
+            accountId=account.id;
 
-            await ctx.runMutation(internal.users.setStripeAccountId, { userId: user._id, stripeAccountId: accountId });
+            await ctx.runMutation(internal.users.setStripeAccountId,{userId:user._id,stripeAccountId:accountId});
         }
 
-
-        const accountLink = await stripe.accountLinks.create({
-            account: accountId,
-            refresh_url: process.env.NEXT_PUBLIC_HOSTING_URL,
-            return_url: `${process.env.NEXT_PUBLIC_HOSTING_URL}/stripe-account-setup-complete/${user._id}`,
-            type: 'account_onboarding',
+        const accountLink=await stripe.accountLinks.create({
+            account:accountId,
+            refresh_url:process.env.NEXT_PUBLIC_HOSTING_URL,
+            return_url:`${process.env.NEXT_PUBLIC_HOSTING_URL}/stripe-account-setup-complete/${user._id}`,
+            type:'account_onboarding',
         });
 
         return accountLink.url;
     },
 });
 
-
-export const setStripeAccountId = internalMutation({
-    args: { userId: v.id("users"), stripeAccountId: v.string() },
-    handler: async (ctx, args) => {
-        const user = await ctx.db.get(args.userId);
-        if (!user) {
+export const setStripeAccountId=internalMutation({
+    args:{userId:v.id("users"),stripeAccountId:v.string()},
+    handler:async(ctx,args)=>{
+        const user=await ctx.db.get(args.userId);
+        if(!user){
             throw new Error("User not found");
         }
-        await ctx.db.patch(args.userId, { stripeAccountId: args.stripeAccountId });
+        await ctx.db.patch(args.userId,{stripeAccountId:args.stripeAccountId});
     },
 });
 
-
-export const updateStripeSetup = internalMutation({
-    args: { id: v.id("users"), stripeAccountSetupComplete: v.boolean() },
-    handler: async (ctx, args) => {
-        await ctx.db.patch(args.id, { stripeAccountSetupComplete: args.stripeAccountSetupComplete });
+export const updateStripeSetup=internalMutation({
+    args:{id:v.id("users"),stripeAccountSetupComplete:v.boolean()},
+    handler:async(ctx,args)=>{
+        await ctx.db.patch(args.id,{stripeAccountSetupComplete:args.stripeAccountSetupComplete});
     },
 });
 
-
-export const getUserByUsername = query({
-    args: { username: v.optional(v.string()) },
-    handler: async (ctx, args) => {
-        if (args.username === undefined) return null;
-        if (!args.username) return null;
-        const user = await ctx.db
+export const getUserByUsername=query({
+    args:{username:v.optional(v.string())},
+    handler:async(ctx,args)=>{
+        if(args.username===undefined)return null;
+        if(!args.username)return null;
+        const user=await ctx.db
             .query("users")
-            .withIndex("by_username", (q) => q.eq("username", args.username!))
+            .withIndex("by_username",(q)=>q.eq("username",args.username!))
             .unique();
 
         return user;
     },
 });
 
-
-export const getLanguagesByUsername = query({
-    args: { username: v.string() },
-    handler: async (ctx, args) => {
-        const user = await ctx.db
+export const getLanguagesByUsername=query({
+    args:{username:v.string()},
+    handler:async(ctx,args)=>{
+        const user=await ctx.db
             .query("users")
-            .withIndex("by_username", (q) => q.eq("username", args.username))
+            .withIndex("by_username",(q)=>q.eq("username",args.username))
             .unique();
 
-        if (!user) {
+        if(!user){
             throw new Error("User not found");
         }
 
-        const languages = await ctx.db
+        const languages=await ctx.db
             .query("languages")
-            .withIndex("by_userId", (q) => q.eq("userId", user._id))
+            .withIndex("by_userId",(q)=>q.eq("userId",user._id))
             .collect();
 
         return languages;
     },
 });
 
-export const getCountryByUsername = query({
-    args: { username: v.string() },
-    handler: async (ctx, args) => {
-        const user = await ctx.db
+export const getCountryByUsername=query({
+    args:{username:v.string()},
+    handler:async(ctx,args)=>{
+        const user=await ctx.db
             .query("users")
-            .withIndex("by_username", (q) => q.eq("username", args.username))
+            .withIndex("by_username",(q)=>q.eq("username",args.username))
             .unique();
 
-        if (!user) {
+        if(!user){
             throw new Error("User not found");
         }
 
-        const country = await ctx.db.query("countries")
-            .withIndex("by_userId", (q) => q.eq("userId", user._id))
+        const country=await ctx.db.query("countries")
+            .withIndex("by_userId",(q)=>q.eq("userId",user._id))
             .unique();
 
-        if (!country) {
+        if(!country){
             throw new Error("Country not found");
         }
         return country;
@@ -205,35 +193,46 @@ export const getCountryByUsername = query({
 export const updateUser = mutation({
     args: {
       userId: v.id("users"),
-      fullName: v.optional(v.string()),
-      title: v.optional(v.string()),
-      about: v.optional(v.string()),
-      profileImageUrl: v.optional(v.string()),
+      fullName: v.string(),
+      title: v.string(),
+      about: v.string(),
     },
-    handler: async (ctx, args) => {
-      const identity = await ctx.auth.getUserIdentity();
-      if (!identity) {
-        throw new Error("Unauthenticated call to mutation");
-      }
-  
-      const user = await ctx.db.get(args.userId);
+    handler: async (ctx, { userId, fullName, title, about }) => {
+      const user = await ctx.db.get(userId);
       if (!user) {
         throw new Error("User not found");
       }
-  
-      // Ensure the authenticated user is updating their own profile
-      if (user.tokenIdentifier !== identity.tokenIdentifier) {
-        throw new Error("Not authorized to update this user");
-      }
-  
-      const updates: Partial<typeof user> = {};
-      if (args.fullName !== undefined) updates.fullName = args.fullName;
-      if (args.title !== undefined) updates.title = args.title;
-      if (args.about !== undefined) updates.about = args.about;
-      if (args.profileImageUrl !== undefined) updates.profileImageUrl = args.profileImageUrl;
-  
-      await ctx.db.patch(args.userId, updates);
-  
-      return ctx.db.get(args.userId);
+      await ctx.db.patch(userId, {
+        fullName,
+        title,
+        about,
+      });
     },
   });
+  
+  
+// Define the allowed user types
+type UserType = "contractor" | "business";
+
+// Update the setUserType mutation
+export const setUserType = mutation({
+  args: {
+    userId: v.id("users"),
+    userType: v.string(), // Accept any string initially
+  },
+  handler: async (ctx, { userId, userType }) => {
+    const user = await ctx.db.get(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // Ensure userType is one of the allowed values
+    if (userType !== "contractor" && userType !== "business") {
+      throw new Error("Invalid userType value");
+    }
+
+    await ctx.db.patch(userId, {
+      userType,
+    });
+  },
+});

@@ -2,22 +2,23 @@ import { v } from "convex/values";
 import { defineSchema, defineTable } from "convex/server";
 
 export default defineSchema({
-    users: defineTable({
-        fullName: v.string(),
-        username: v.string(),
-        title: v.string(),
-        about: v.string(),
-        bio: v.optional(v.string()), // Add the bio field here
-        portfolioUrls: v.optional(v.array(v.string())),
-        profileImageUrl: v.optional(v.string()),
-        favoritedSellerIds: v.optional(v.array(v.string())),
-        tokenIdentifier: v.string(),
-        customTag: v.optional(v.string()),
-        stripeAccountId: v.optional(v.string()),
-        stripeAccountSetupComplete: v.optional(v.boolean()),
-    })
-        .index("by_token", ["tokenIdentifier"])
-        .index("by_username", ["username"]),
+  users: defineTable({
+    fullName: v.string(),
+    username: v.string(),
+    title: v.string(),
+    about: v.string(),
+    bio: v.optional(v.string()),
+    portfolioUrls: v.optional(v.array(v.string())),
+    profileImageUrl: v.optional(v.string()),
+    favoritedSellerIds: v.optional(v.array(v.string())),
+    tokenIdentifier: v.string(),
+    customTag: v.optional(v.string()),
+    stripeAccountId: v.optional(v.string()),
+    stripeAccountSetupComplete: v.optional(v.boolean()),
+    userType: v.optional(v.union(v.literal("contractor"), v.literal("business"))), // Add this line
+  })
+    .index("by_token", ["tokenIdentifier"])
+    .index("by_username", ["username"]),
     reviews: defineTable({
         authorId: v.id("users"),
         sellerId: v.id("users"),

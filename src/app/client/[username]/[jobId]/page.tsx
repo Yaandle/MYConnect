@@ -5,7 +5,7 @@ import { Header } from "./_components/header";
 import { api } from "@/convex/_generated/api";
 import { Offers } from "./_components/offers";
 import { Seller } from "./_components/seller";
-import { Images } from "../../../components/images";
+import { Images } from "../../../../components/images";
 import { Description } from "@/components/description";
 import { Info } from "lucide-react";
 import { SellerDetails } from "./_components/seller-details";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { Button } from "@/components/ui/button";
@@ -10,11 +10,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 
-export default function UserSettings() {
-  const params = useParams();
-  const router = useRouter();
-  const username = params.username as string;
+interface UserSettingsProps {
+  username: string;
+}
 
+const UserSettings = ({ username }: UserSettingsProps) => {
+  const router = useRouter();
   const user = useQuery(api.users.getUserByUsername, { username });
   const userSkills = useQuery(api.skills.getByUser, { username });
   const updateUser = useMutation(api.users.updateUser);
@@ -127,32 +128,38 @@ export default function UserSettings() {
                     <button
                       type="button"
                       onClick={() => handleRemoveSkill(skill)}
-                      className="ml-2 text-red-500 font-bold"
+                      className="ml-2 text-red-600"
                     >
-                      ×
+                      &times;
                     </button>
                   </div>
                 ))}
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 mt-2">
                 <Input
                   type="text"
                   value={newSkill}
                   onChange={(e) => setNewSkill(e.target.value)}
                   placeholder="Add a new skill"
                 />
-                <Button type="button" onClick={handleAddSkill}>Add</Button>
+                <Button type="button" onClick={handleAddSkill}>Add Skill</Button>
               </div>
             </div>
-            <div className="flex justify-between">
-              <Button type="button" variant="outline" onClick={handleBackToProfile}>
+            <div className="flex gap-4">
+              <Button type="submit" className="w-full">Save Changes</Button>
+              <Button
+                type="button"
+                className="w-full bg-gray-500 hover:bg-gray-700"
+                onClick={handleBackToProfile}
+              >
                 Back to Profile
               </Button>
-              <Button type="submit">Update Profile</Button>
             </div>
           </form>
         </CardContent>
       </Card>
     </div>
   );
-}
+};
+
+export default UserSettings;
