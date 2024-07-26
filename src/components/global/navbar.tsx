@@ -66,7 +66,7 @@ export const Navbar: React.FC<{ username: string }> = ({ username }) => {
                   <ListItem href={`/seller/${username}/manage-jobs`} title="Jobs">
                     Manage, create and edit your Jobs here.
                   </ListItem>
-                  <ListItem href={`/seller/${username}/profile`} title="Profile">
+                  <ListItem href={`/${username}`} title="Profile">
                     Manage and edit your profile. Present yourself to the world.
                   </ListItem>
                 </ul>

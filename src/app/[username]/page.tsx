@@ -1,11 +1,14 @@
 "use client";
 
 import { useQuery } from "convex/react";
+import { useRouter } from "next/navigation";
 import { ProfileCard } from "./_components/profile-card";
 import { api } from "@/convex/_generated/api";
 import { MyJobsList } from "./_components/my-jobs-list";
 import { ReviewsStats } from "./_components/reviews/reviews-stats";
 import { Reviews } from "./_components/reviews/reviews";
+import { Button } from "@/components/ui/button"; // Adjust this import based on your UI library
+import { useConvexAuth } from "convex/react";
 
 interface SellerPageProps {
     params: {
@@ -17,19 +20,31 @@ interface SellerPageProps {
 const SellerPage = ({
     params
 }: SellerPageProps) => {
+    const router = useRouter();
+    const { isAuthenticated } = useConvexAuth();
+    const currentUser = useQuery(api.users.getCurrentUser);
     const seller = useQuery(api.users.getUserByUsername, { username: params.username });
     const skills = useQuery(api.skills.getByUser, { username: params.username });
     const jobs = useQuery(api.jobs.getBySellerName, { sellerName: params.username });
-    //const orders = useQuery(api.orders.getByJob, { jobId: params.jobId as Id<"jobs"> });
     const reviews = useQuery(api.reviews.getBySellerName, { sellerName: params.username });
 
-    if (seller === undefined || reviews === undefined || skills === undefined || jobs === undefined) {
+    const handleNavigateToSettings = () => {
+        router.push(`/${params.username}/settings`);
+    };
+
+    const handleNavigateToUsernameSettings = () => {
+        router.push(`/${params.username}/settings/username`);
+    };
+
+    if (seller === undefined || reviews === undefined || skills === undefined || jobs === undefined || currentUser === undefined) {
         return <div>Loading...</div>
     }
 
     if (seller === null || jobs === null) {
         return <div>Not found</div>
     }
+
+    const isOwnProfile = isAuthenticated && currentUser && currentUser.username === params.username;
 
     const skillsString = skills ? skills.map((skill) => skill.skill).join(", ") : "";
 
@@ -41,6 +56,16 @@ const SellerPage = ({
                         seller={seller}
                         reviews={reviews}
                     />
+                    {isOwnProfile && (
+                        <div className="flex space-x-4">
+                            <Button onClick={handleNavigateToSettings}>
+                                Edit Profile
+                            </Button>
+                            <Button onClick={handleNavigateToUsernameSettings}>
+                                Change Username
+                            </Button>
+                        </div>
+                    )}
                     <div>
                         <p className="font-bold">About me</p>
                         <p>{seller.about}</p>
@@ -54,7 +79,6 @@ const SellerPage = ({
             <MyJobsList
                 sellerUsername={params.username}
             />
-
             <ReviewsStats
                 reviews={reviews}
             />
@@ -64,4 +88,5 @@ const SellerPage = ({
         </div>
     )
 }
+
 export default SellerPage;

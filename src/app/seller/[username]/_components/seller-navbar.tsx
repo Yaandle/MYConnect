@@ -30,13 +30,13 @@ const components: { title: string; href: string; description: string }[] = [
     },
     {
         title: "Jobs",
-        href: "/docs/primitives/hover-card",
+        href: "/dashboard/[username]",
         description:
             "For sighted users to preview content available behind a link.",
     },
     {
         title: "Profile",
-        href: "/profile",
+        href: "/[username]",
         description:
             "Displays an indicator showing the completion progress of a task, typically displayed as a progress bar.",
     }
