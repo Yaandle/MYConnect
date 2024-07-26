@@ -1,7 +1,7 @@
 "use client";
 
 import { useConvexAuth, useMutation } from "convex/react";
-import { JobList } from "../_components/job-list";
+import { JobList } from "./_components/job-list";
 import { useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import { Id } from "@/convex/_generated/dataModel";

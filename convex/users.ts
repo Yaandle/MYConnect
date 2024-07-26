@@ -201,3 +201,39 @@ export const getCountryByUsername = query({
         return country;
     },
 });
+
+export const updateUser = mutation({
+    args: {
+      userId: v.id("users"),
+      fullName: v.optional(v.string()),
+      title: v.optional(v.string()),
+      about: v.optional(v.string()),
+      profileImageUrl: v.optional(v.string()),
+    },
+    handler: async (ctx, args) => {
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        throw new Error("Unauthenticated call to mutation");
+      }
+  
+      const user = await ctx.db.get(args.userId);
+      if (!user) {
+        throw new Error("User not found");
+      }
+  
+      // Ensure the authenticated user is updating their own profile
+      if (user.tokenIdentifier !== identity.tokenIdentifier) {
+        throw new Error("Not authorized to update this user");
+      }
+  
+      const updates: Partial<typeof user> = {};
+      if (args.fullName !== undefined) updates.fullName = args.fullName;
+      if (args.title !== undefined) updates.title = args.title;
+      if (args.about !== undefined) updates.about = args.about;
+      if (args.profileImageUrl !== undefined) updates.profileImageUrl = args.profileImageUrl;
+  
+      await ctx.db.patch(args.userId, updates);
+  
+      return ctx.db.get(args.userId);
+    },
+  });

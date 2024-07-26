@@ -123,7 +123,7 @@ const Navbar = () => {
                             </Button>
                         </TooltipProvider>
 
-                        <Button onClick={() => router.push(`/seller/${currentUser.username}/manage-gigs`)}>
+                        <Button onClick={() => router.push(`/seller/${currentUser.username}/manage-jobs`)}>
                             Switch To Selling
                         </Button>
                         {!currentUser.stripeAccountSetupComplete &&

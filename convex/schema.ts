@@ -7,6 +7,7 @@ export default defineSchema({
         username: v.string(),
         title: v.string(),
         about: v.string(),
+        bio: v.optional(v.string()), // Add the bio field here
         portfolioUrls: v.optional(v.array(v.string())),
         profileImageUrl: v.optional(v.string()),
         favoritedSellerIds: v.optional(v.array(v.string())),
