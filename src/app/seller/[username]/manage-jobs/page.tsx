@@ -1,10 +1,14 @@
 "use client";
+
 import Link from "next/link";
+
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
+
 import { JobList } from "./_components/job-list";
 import { Separator } from "@/components/ui/separator";
+
 import { JobData, columns } from "./_components/columns";
 import { Loading } from "@/components/auth/loading";
 import { DataTable } from "./_components/data-table";

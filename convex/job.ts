@@ -1,7 +1,8 @@
 import { v } from "convex/values";
-
 import { internalMutation, mutation, query } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
+
+// internal mutations - https://github.com/get-convex/convex-stripe-demo/blob/main/convex/payments.ts
 
 export const create = mutation({
     args: {
@@ -40,6 +41,7 @@ export const create = mutation({
     },
 });
 
+
 export const get = query({
     args: { id: v.id("jobs") },
     handler: async (ctx, args) => {
@@ -61,6 +63,7 @@ export const get = query({
             throw new Error("Country not found");
         }
 
+        // get languages
         const languages = await ctx.db.query("languages")
             .withIndex("by_userId", (q) => q.eq("userId", seller._id))
             .collect();
@@ -76,16 +79,20 @@ export const get = query({
             seller: sellerWithCountryAndLanguages
         };
 
+        // get last fulfilment
         const lastFulfilment = await ctx.db.query("orders")
             .withIndex("by_jobId", (q) => q.eq("jobId", job._id))
             .order("desc")
             .first();
+
 
         const jobWithSellerAndLastFulfilment = {
             ...jobWithSeller,
             lastFulfilment: lastFulfilment,
         };
 
+
+        // get images
         const images = await ctx.db.query("jobMedia")
             .withIndex("by_jobId", (q) => q.eq("jobId", job._id))
             .collect();
@@ -106,6 +113,7 @@ export const get = query({
         return jobWithSellerAndLastFulfilmentAndImages;
     },
 });
+
 
 export const isPublished = query({
     args: { id: v.id("jobs") },
@@ -160,6 +168,7 @@ export const unpublish = mutation({
     },
 });
 
+
 export const remove = mutation({
     args: { id: v.id("jobs") },
     handler: async (ctx, args) => {
@@ -180,6 +189,7 @@ export const remove = mutation({
             return;
         }
 
+        //const userId = identity.subject as Id<"users">;
         const userId = user._id;
         const existingFavorite = await ctx.db
             .query("userFavorites")
@@ -197,6 +207,7 @@ export const remove = mutation({
         await ctx.db.delete(args.id);
     },
 });
+
 
 export const updateDescription = mutation({
     args: { id: v.id("jobs"), description: v.string() },
@@ -252,6 +263,7 @@ export const update = mutation({
     },
 });
 
+
 export const favorite = mutation({
     args: { id: v.id("jobs") },
     handler: async (ctx, args) => {
@@ -264,7 +276,7 @@ export const favorite = mutation({
         const job = await ctx.db.get(args.id);
 
         if (!job) {
-            throw new Error("Board not found");
+            throw new Error("Job not found");
         }
 
         const user = await ctx.db
@@ -290,7 +302,7 @@ export const favorite = mutation({
             .unique();
 
         if (existingFavorite) {
-            throw new Error("Board already favorited");
+            throw new Error("Job already favorited");
         }
 
         await ctx.db.insert("userFavorites", {
@@ -301,6 +313,7 @@ export const favorite = mutation({
         return job;
     },
 });
+
 
 export const unfavorite = mutation({
     args: { id: v.id("jobs") },
@@ -314,7 +327,7 @@ export const unfavorite = mutation({
         const job = await ctx.db.get(args.id);
 
         if (!job) {
-            throw new Error("Board not found");
+            throw new Error("Job not found");
         }
 
         const user = await ctx.db
@@ -340,7 +353,7 @@ export const unfavorite = mutation({
             .unique();
 
         if (!existingFavorite) {
-            throw new Error("Favorited job not found");
+            throw new Error("Job not favorited");
         }
 
         await ctx.db.delete(existingFavorite._id);
@@ -349,39 +362,64 @@ export const unfavorite = mutation({
     },
 });
 
-export const getSeller = query({
-    args: { id: v.id("users") },
-    handler: async (ctx, args) => {
-        const seller = ctx.db.get(args.id);
-        return seller;
+export const getAllFavorites = query({
+    args: {},
+    handler: async (ctx) => {
+        const identity = await ctx.auth.getUserIdentity();
+
+        if (!identity) {
+            throw new Error("Unauthorized");
+        }
+
+        const user = await ctx.db
+            .query("users")
+            .withIndex("by_token", (q) =>
+                q.eq("tokenIdentifier", identity.tokenIdentifier)
+            )
+            .unique();
+
+        if (user === null) {
+            return [];
+        }
+
+        const userId = user._id;
+
+        const favorites = await ctx.db
+            .query("userFavorites")
+            .withIndex("by_user", (q) =>
+                q.eq("userId", userId)
+            )
+            .collect();
+
+        const jobs = await Promise.all(favorites.map((favorite) => {
+            return ctx.db.get(favorite.jobId);
+        }));
+
+        return jobs;
     },
 });
 
 export const getCategoryAndSubcategory = query({
-    args: {
-        jobId: v.id("jobs"),
-    },
+    args: { jobId: v.id("jobs") },
     handler: async (ctx, args) => {
         const job = await ctx.db.get(args.jobId);
-
         if (!job) {
             throw new Error("Job not found");
         }
 
-        const subcategory = await ctx.db.get(job.subcategoryId);
-
+        const subcategory = await ctx.db.get(job.subcategoryId as Id<"subcategories">);
         if (!subcategory) {
             throw new Error("Subcategory not found");
         }
 
-        const category = await ctx.db.get(subcategory.categoryId);
+        const category = await ctx.db.get(subcategory.categoryId as Id<"categories">);
         if (!category) {
             throw new Error("Category not found");
         }
 
         return {
-            category: category.name,
-            subcategory: subcategory.name,
+            category,
+            subcategory,
         };
-    }
+    },
 });

@@ -31,7 +31,6 @@ export const MyJobsList = ({
             align: "start",
             loop: true,
             dragFree: false,
-
         }} className="w-full">
             <CarouselContent>
                 {jobs.map((job) => (
@@ -50,4 +49,4 @@ export const MyJobsList = ({
             <CarouselNext />
         </Carousel>
     );
-};
+}

@@ -1,7 +1,7 @@
 import { Doc, Id } from "@/convex/_generated/dataModel";
 
 export type ImageWithUrlType = Doc<"jobMedia"> & {
-    url: string
+    url: string;
 };
 
 export type FullJobType = Doc<"jobs"> & {
@@ -10,27 +10,25 @@ export type FullJobType = Doc<"jobs"> & {
     offer: Doc<"offers">;
     reviews: Doc<"reviews">[];
     seller: Doc<"users">;
-}
+};
 
 export type MessageWithUserType = Doc<"messages"> & {
-    user: Doc<"users">
+    user: Doc<"users">;
 };
 
 export type JobWithImageType = Doc<"jobs"> & {
-    images: Doc<"jobMedia">[]
+    images: ImageWithUrlType[];
 };
 
 export type UserWithCountryType = Doc<"users"> & {
-    country: Doc<"countries">
+    country: Doc<"countries">;
 };
 
 export type ReviewFullType = Doc<"reviews"> & {
-    author: UserWithCountryType
-    image: ImageWithUrlType
-    offers: Doc<"offers">[]
-    job: Doc<"jobs">
+    author: UserWithCountryType;
+    image: ImageWithUrlType;
+    offers: Doc<"offers">[];
+    job: Doc<"jobs">;
 };
 
-export type CategoriesFullType = Doc<"categories"> & {
-
-};
+export type CategoriesFullType = Doc<"categories"> & {};

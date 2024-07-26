@@ -23,7 +23,8 @@ export const getByUser = query({
                 .first();
 
             if (!user) {
-                throw new Error("User not found");
+                console.log(`User not found for username: ${args.username}`);
+                return []; // Return an empty array instead of throwing an error
             }
 
             const skills = await ctx.db
@@ -34,7 +35,8 @@ export const getByUser = query({
             return skills;
         } catch (error) {
             console.error('Error in getByUser handler:', error);
-            throw error;
+            // Instead of re-throwing the error, return an empty array
+            return [];
         }
     },
 });

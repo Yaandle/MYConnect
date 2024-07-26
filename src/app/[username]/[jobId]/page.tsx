@@ -3,15 +3,14 @@
 import { useQuery } from "convex/react";
 import { Header } from "./_components/header";
 import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
 import { Offers } from "./_components/offers";
 import { Seller } from "./_components/seller";
 import { Images } from "../../../components/images";
 import { Description } from "@/components/description";
 import { Info } from "lucide-react";
 import { SellerDetails } from "./_components/seller-details";
-import { Reviews } from "../_components/reviews/reviews";
 import { AddReview } from "../_components/reviews/add-review";
+import { FullJobType, ReviewFullType } from "@/types";
 
 interface PageProps {
     params: {
@@ -20,16 +19,15 @@ interface PageProps {
     }
 }
 
-const JobPage = ({
-    params
-}: PageProps) => {
-    const job = useQuery(api.jobs.get, { id: params.jobId as Id<"jobs"> });
-    const categoryAndSubcategory = useQuery(api.jobs.getCategoryAndSubcategory, { jobId: params.jobId as Id<"jobs"> });
-    const offers = useQuery(api.offers.get, { jobId: params.jobId as Id<"offers"> });
-    const reviews = useQuery(api.reviews.getByJob, { jobId: params.jobId as Id<"reviews"> });
-    const reviewsFull = useQuery(api.reviews.getFullByJob, { jobId: params.jobId as Id<"reviews"> });
+const JobPage = ({ params }: PageProps) => {
+    // Adjust the parameters based on API expectations
+    const job = useQuery(api.jobs.get, { id: params.jobId });
+    const categoryAndSubcategory = useQuery(api.jobs.getCategoryAndSubcategory, { jobId: params.jobId });
+    const offers = useQuery(api.offers.get, { jobId: params.jobId });
+    const reviews = useQuery(api.reviews.getByJob, { jobId: params.jobId });
+    const reviewsFull = useQuery(api.reviews.getFullByJob, { jobId: params.jobId });
 
-    if (job === undefined || reviews === undefined || reviewsFull === undefined || categoryAndSubcategory === undefined || offers === undefined) {
+    if (!job || !categoryAndSubcategory || !offers || !reviews || !reviewsFull) {
         return <div>Loading...</div>;
     }
 
@@ -48,7 +46,8 @@ const JobPage = ({
             <div className="flex flex-col sm:flex-row w-full sm:justify-center space-x-0 sm:space-x-3 lg:space-x-16">
                 <div className="w-full space-y-8">
                     <Header
-                        {...categoryAndSubcategory}
+                        category={categoryAndSubcategory.category}
+                        subcategory={categoryAndSubcategory.subcategory}
                         editUrl={editUrl}
                         ownerId={job.seller._id}
                     />
@@ -77,7 +76,7 @@ const JobPage = ({
                     <SellerDetails
                         seller={job.seller}
                         reviews={reviews}
-                        lastFulFilmentTime={job.lastFulfilment?.fulfilmentTime}
+                        lastFulfilmentTime={job.lastFulfilment?.fulfilmentTime}
                         languages={job.seller.languages}
                     />
                     <AddReview

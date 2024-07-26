@@ -2,22 +2,21 @@
 
 import Link from "next/link"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useFieldArray, useForm } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { z } from "zod"
+import { useState } from "react"
 
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
 import { api } from "@/convex/_generated/api"
 import { useQuery } from "convex/react"
-import { useState } from "react"
 import { Doc, Id } from "@/convex/_generated/dataModel"
 import { useApiMutation } from "@/hooks/use-api-mutation"
 import { useRouter } from "next/navigation"
+import { Calendar } from "@/components/ui/calendar"
 
 interface CreateFormProps {
     username: string;
@@ -39,14 +38,17 @@ const CreateFormSchema = z.object({
     subcategoryId: z
         .string({
             required_error: "Please select a subcategory.",
-        })
+        }),
+    date: z.date({
+        required_error: "Please select a date.",
+    })
 })
 
 type CreateFormValues = z.infer<typeof CreateFormSchema>
 
-// This can come from your database or API.
 const defaultValues: Partial<CreateFormValues> = {
     title: "",
+    date: new Date(),
 }
 
 export const CreateForm = ({
@@ -73,15 +75,16 @@ export const CreateForm = ({
             setSubcategories(selectedCategory.subcategories);
         }
     }
+
     function onSubmit(data: CreateFormValues) {
         mutate({
             title: data.title,
             description: "",
             subcategoryId: data.subcategoryId,
+            date: data.date,
         })
             .then((jobId: Id<"jobs">) => {
                 toast.info("Job created successfully");
-                //form.setValue("title", "");
                 router.push(`/seller/${username}/manage-jobs/edit/${jobId}`)
             })
             .catch(() => {
@@ -165,6 +168,29 @@ export const CreateForm = ({
                             </Select>
                             <FormDescription>
                                 Subcategory will help buyers pinpoint your service more narrowly.
+                            </FormDescription>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="date"
+                    render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                            <FormLabel>Date</FormLabel>
+                            <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                disabled={(date) =>
+                                    date < new Date("1900-01-01") ||
+                                    date > new Date("2100-01-01")
+                                }
+                                className="rounded-md border"
+                            />
+                            <FormDescription>
+                                Select a date for your job.
                             </FormDescription>
                             <FormMessage />
                         </FormItem>

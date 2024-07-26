@@ -15,9 +15,11 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as categories from "../categories.js";
+import type * as conversations from "../conversations.js";
 import type * as job from "../job.js";
 import type * as jobMedia from "../jobMedia.js";
 import type * as jobs from "../jobs.js";
+import type * as messages from "../messages.js";
 import type * as offers from "../offers.js";
 import type * as reviews from "../reviews.js";
 import type * as seedCategories from "../seedCategories.js";
@@ -36,9 +38,11 @@ import type * as users from "../users.js";
  */
 declare const fullApi: ApiFromModules<{
   categories: typeof categories;
+  conversations: typeof conversations;
   job: typeof job;
   jobMedia: typeof jobMedia;
   jobs: typeof jobs;
+  messages: typeof messages;
   offers: typeof offers;
   reviews: typeof reviews;
   seedCategories: typeof seedCategories;

@@ -50,8 +50,7 @@ export const add = action({
             });
 
             return "success";
-        }
-        else {
+        } else {
             await ctx.runMutation(internal.offers.update, {
                 jobId: args.jobId,
                 title: args.title,

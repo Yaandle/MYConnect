@@ -9,9 +9,9 @@ import { Reviews } from "./_components/reviews/reviews";
 
 interface SellerPageProps {
     params: {
-        username: string;
-        jobId: string; // Ensure this is used correctly in your queries if applicable
-    };
+        username: string
+        jobId: string
+    }
 }
 
 const SellerPage = ({
@@ -20,16 +20,15 @@ const SellerPage = ({
     const seller = useQuery(api.users.getUserByUsername, { username: params.username });
     const skills = useQuery(api.skills.getByUser, { username: params.username });
     const jobs = useQuery(api.jobs.getBySellerName, { sellerName: params.username });
-    // Uncomment and update this line if you have an actual API query for jobs
-    // const orders = useQuery(api.orders.getByJob, { jobId: params.jobId as Id<"jobs"> });
+    //const orders = useQuery(api.orders.getByJob, { jobId: params.jobId as Id<"jobs"> });
     const reviews = useQuery(api.reviews.getBySellerName, { sellerName: params.username });
 
     if (seller === undefined || reviews === undefined || skills === undefined || jobs === undefined) {
-        return <div>Loading...</div>;
+        return <div>Loading...</div>
     }
 
     if (seller === null || jobs === null) {
-        return <div>Not found</div>;
+        return <div>Not found</div>
     }
 
     const skillsString = skills ? skills.map((skill) => skill.skill).join(", ") : "";
@@ -63,7 +62,6 @@ const SellerPage = ({
                 reviews={reviews}
             />
         </div>
-    );
-};
-
+    )
+}
 export default SellerPage;

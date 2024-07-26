@@ -53,7 +53,7 @@ export const ContentEditor = ({
                 <Input id="title" placeholder="title" value={title} onChange={(e) => setTitle(e.target.value)} />
             </div>
             <div className="">
-                <Label htmlFor="price">Price (USD):</Label>
+                <Label htmlFor="price">Price (AUD):</Label>
                 <Input id="price" placeholder="price" type="number" value={price} onChange={(e) => setPrice(parseInt(e.target.value))} />
             </div>
             <div>
@@ -61,11 +61,11 @@ export const ContentEditor = ({
                 <Input id="description" placeholder="description" value={description} onChange={(e) => setDescription(e.target.value)} />
             </div>
             <div>
-                <Label htmlFor="delivery">Number of days for delivery:</Label>
+                <Label htmlFor="delivery">Number of Days for Delivery:</Label>
                 <Input id="delivery" placeholder="delivery days" type="number" value={deliveryDays} onChange={(e) => setDeliveryDays(parseInt(e.target.value))} />
             </div>
             <div>
-                <Label htmlFor="revisions">Number of revisions:</Label>
+                <Label htmlFor="revisions">Number of Revisions:</Label>
                 <Input id="revisions" placeholder="revisions" type="number" value={revisions} onChange={(e) => setRevisions(parseInt(e.target.value))} />
             </div>
 

@@ -1,4 +1,4 @@
-'use client'; // This directive is necessary for client components in Next.js 14
+'use client';
 
 import React from 'react';
 import Link from 'next/link';
@@ -6,6 +6,7 @@ import { Calendar } from '@/components/ui/calendar';
 
 const ContractorsPage = () => {
   const [date, setDate] = React.useState<Date | undefined>(new Date());
+
   return (
     <div className="bg-white min-h-screen flex flex-col justify-center">
       <div className="container mx-auto px-4 py-8">
