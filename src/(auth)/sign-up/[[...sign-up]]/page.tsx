@@ -9,6 +9,7 @@ export default function SignUpPage() {
   const { isSignedIn } = useUser();
 
   useEffect(() => {
+    // Redirect to /select-user-type if user is signed in
     if (isSignedIn) {
       router.push('/select-user-type');
     }
